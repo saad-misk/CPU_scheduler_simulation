@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <set>
 // #include <sstream>
 #include "Scheduling_algorithms.h"
 
@@ -68,7 +69,7 @@ double cpu_utilization(vector<Process>& v){
     return (sum_util / total_time) * 100; // return it as a percentage
 }
 
-void print_output(vector<Process> processes){
+void print_output(vector<Process> processes, int quantum){
 
     vector<Process> v = FCFS(processes);
     cout << avg_waiting_time(v) << ", " << avg_turnaround_time(v) << ", " << cpu_utilization(v) << "\n";
@@ -84,8 +85,7 @@ void print_output(vector<Process> processes){
     }
     cout << "\nbreak\n";
 
-    v = RoundRobin(processes, 4);
-    v[0].id = -1;
+    v = RoundRobin(processes, quantum);
     cout << avg_waiting_time(v) << ", " << avg_turnaround_time(v) << ", " << cpu_utilization(v) << "\n";
     for(int i = 0; i < (int)v.size(); i++){
         cout << v[i].id << ": " << v[i].arrival << " " << v[i].completion << "   |   ";
@@ -93,13 +93,41 @@ void print_output(vector<Process> processes){
 
 }
 
-void print_detailed_processes(vector<Process> processes){
+void print_detailed_processes(vector<Process> processes, int quantum){
 
-    for(auto i : processes){
+    vector<Process> v = FCFS(processes);
+    cout << "FCFS algorithm: \n";
+    cout << avg_waiting_time(v) << ", " << avg_turnaround_time(v) << ", " << cpu_utilization(v) << "\n";
+    for(auto i : v){
         cout << "ProcessID: " << i.id << ", arrival: " << i.arrival << ", burst: " << i.burst << 
         ", remaining: " << i.remaining << ", finished: " << i.completion << ", waiting: " << 
         i.waiting << ", turnaround: " << i.turnaround << "\n";
     }
+    cout << endl;
+
+    cout << "SRTF algorithm: \n";
+    v = SRTF(processes);
+    cout << avg_waiting_time(v) << ", " << avg_turnaround_time(v) << ", " << cpu_utilization(v) << "\n";
+    for(auto i : v){
+        cout << "ProcessID: " << i.id << ", arrival_time: " << i.arrival <<
+         ", finish_time: " << i.completion << ", waiting_time: " << 
+        i.waiting << ", turnaround_time: " << i.turnaround << "\n";
+    }
+    cout << endl;
+
+    cout << "RR algorithm: \n";
+    set<int> final_processes;
+    v = RoundRobin(processes, quantum);
+    cout << avg_waiting_time(v) << ", " << avg_turnaround_time(v) << ", " << cpu_utilization(v) << "\n";
+    for(int i = v.size() - 1; i >= 0; i--){
+        if( final_processes.count(v[i].id) ) continue;
+        final_processes.insert(v[i].id);
+
+        cout << "ProcessID: " << v[i].id << ", arrival: " << v[i].arrival << 
+        ", finish_time: " << v[i].completion << ", waiting_time: " << 
+        v[i].waiting << ", turnaround_time: " << v[i].turnaround << "\n";
+    }
+    cout << endl;
 
 }
 
@@ -109,8 +137,8 @@ int main() {
 
     vector<Process> processes = p.first;
     int quantum = p.second;
-    //print_detailed_processes(processes);
-    print_output(processes);
+    // print_detailed_processes(processes, quantum);
+    print_output(processes, quantum);
 
     return 0;
 }

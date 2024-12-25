@@ -73,6 +73,7 @@ vector<Process> SRTF(vector<Process> processes) {
                 result.back() = {processes[idx].id, current_time - 1, processes[idx].burst, 0, current_time, processes[idx].waiting, processes[idx].turnaround};
             }
         } else {
+            result.push_back({-1, current_time, -1, -1, current_time+1, -1, -1});
             current_time++;
         }
     }
@@ -103,9 +104,11 @@ vector<Process> RoundRobin(vector<Process> processes, int quantum) {
     sort(processes.begin(), processes.end(), compareArrival);
     for (auto& process : processes) process.remaining = process.burst;
 
-    for (int i = 0; i < n && processes[i].arrival <= current_time; i++) {
-        readyQueue.push(i);
-        inQueue[i] = true;
+    for (int i = 0; i < n; i++) {
+        if( processes[i].arrival == 0 ){
+            readyQueue.push(i);
+            inQueue[i] = true;
+        }
     }
 
     if( readyQueue.empty() ){
